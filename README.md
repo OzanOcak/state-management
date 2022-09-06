@@ -1,70 +1,88 @@
-# Getting Started with Create React App
+```console
+yarn create react-app state
+yarn add react-redux @reduxjs/toolkit
+yarn start
+```
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+first we need to define our actions as a slice in **counterSlice.js**
 
-## Available Scripts
+```javascript
+const initialState = {
+  count: 0,
+};
 
-In the project directory, you can run:
+export const counterSlice = createSlice({
+  name: "counter",
+  initialState,
+  reducers: {
+    increment: (state) => {
+      state.count += 1;
+    },
+    decrement: (state) => {
+      state.count -= 1;
+    },
+    reset: (state) => {
+      state.count = 0;
+    },
+    incrementByAmount: (state, action) => {
+      state.count += action.payload;
+    },
+  },
+});
 
-### `yarn start`
+export const { increment, decrement, reset, incrementByAmount } =
+  counterSlice.actions;
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+export default counterSlice.reducer;
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+then we need to create Counter component where we can dispatch actions and select states to modify local state within componant
 
-### `yarn test`
+```javascript
+export const Counter = () => {
+  const count = useSelector((state) => state.counter.count);
+  const dispatch = useDispatch();
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  const [incrementAmount, setIncrementAmount] = useState(0);
 
-### `yarn build`
+  const addValue = Number(incrementAmount) || 0;
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  const resetAll = () => {
+    setIncrementAmount(0);
+    dispatch(reset());
+  };
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+  return (
+    <section>
+      <p>{count}</p>
+      <div>
+        <button onClick={() => dispatch(increment())}>+</button>
+        <button onClick={() => dispatch(decrement())}>-</button>
+      </div>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+      <input
+        type="text"
+        value={incrementAmount}
+        onChange={(e) => setIncrementAmount(e.target.value)}
+      />
 
-### `yarn eject`
+      <div>
+        <button onClick={() => dispatch(incrementByAmount(addValue))}>
+          Add Amount
+        </button>
+        <button onClick={resetAll}>Reset</button>
+      </div>
+    </section>
+  );
+};
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+then we need to create a store to keep states within **/app/store.js** where we will recieve counter slices(actions)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```javascript
+export const store = configureStore({
+  reducer: {
+    counter: counterReducer,
+  },
+});
+```
